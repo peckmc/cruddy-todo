@@ -38,31 +38,18 @@ const writeCounter = (count, callback) => {
 
 // Public API - Fix this function //////////////////////////////////////////////
 
-exports.getNextUniqueId = () => {
-  //set counter variable to a call read counter function
-  var counter = readCounter((err, num) => {
+exports.getNextUniqueId = (callback) => {
+  // make a call to readCounter and passing in a callback function
+  //the callback determines what happens if we encounter and error when calling readCounter
+  //and what happens with the fileData if we successfully retrieve it
+  readCounter((err, uniqueId) => {
     if (err) {
-      console.log('Oh noooo!');
+      console.log('read counter err:', err);
     } else {
-      console.log('Read number is:', num);
-      return num;
+      writeCounter(uniqueId + 1, callback);
     }
   });
-  //increment count by one
-  counter++;
-  // write the new value to the file
-  writeCounter(counter, (err, numString) => {
-    if (err) {
-      console.log('Whoopsie daisy!');
-    } else {
-      return numString;
-    }
-  });
-  // counter = counter + 1;
-  // return zeroPaddedNumber(counter);
 };
-
-
 
 // Configuration -- DO NOT MODIFY //////////////////////////////////////////////
 
