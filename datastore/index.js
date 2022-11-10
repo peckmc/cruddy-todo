@@ -50,23 +50,30 @@ exports.readAll = (callback) => {
       callback(null, todoList);
     }
   });
-
-  //assign data variable to a call to map
-  //which returns an array of objects that contain the todo id and text as properties
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
-  //callback is called on array returned above
-  // callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  // refactor the readOne to read a todo item from the dataDir based on the message's id.
+  // For this function, you must read the contents of the todo item file and respond with it to the client.
+
+  // create path to file with input id name using path.join
+  var endpoint = id + '.txt';
+  var currentPath = path.join(exports.dataDir, endpoint);
+  // make a call to fs.readfile, passing in the path variable and a callback
+  // first parameter of callback is an error
+  // second parameter is data
+  // handle the error
+  fs.readFile(currentPath, 'utf8', (err, data) => {
+    if (err) {
+      console.log('No file with that id!', err);
+      callback(err);
+      // on success
+      // create an object with two properties: first property is the id, second property key is text, value is data
+    } else {
+      var currentTodo = { id, text: data };
+      callback(null, currentTodo);
+    }
+  });
 };
 
 exports.update = (id, text, callback) => {
