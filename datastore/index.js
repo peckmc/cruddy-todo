@@ -77,14 +77,43 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    items[id] = text;
-    callback(null, { id, text });
-  }
+  //refactor the update function to rewrite the todo item stored in the dataDir based on its id
+  //create a path to the file with the input id, using path.join
+  var endpoint = id + '.txt';
+  var currentPath = path.join(exports.dataDir, endpoint);
+  //check current path to see if file exists
+  fs.readFile(currentPath, 'utf8', (err, data) => {
+    if (err) {
+      callback(err);
+    } else {
+      fs.writeFile(currentPath, text, (err) => {
+        if (err) {
+          callback(err);
+        } else {
+          //on success...
+          //call the callback, passing in null and text
+          callback(null, text);
+        }
+      });
+    }
+  })
 };
+  //handle error
+  //on success..
+
+  //make a call to fs.writeFile passing in path variable, text, and callback fn
+  //callback takes err param
+  //handle err
+
+
+// var item = items[id];
+// if (!item) {
+//   callback(new Error(`No item with id: ${id}`));
+// } else {
+//   items[id] = text;
+//   callback(null, { id, text });
+// }
+
 
 exports.delete = (id, callback) => {
   var item = items[id];
