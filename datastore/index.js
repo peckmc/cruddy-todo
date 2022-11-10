@@ -21,8 +21,6 @@ exports.create = (text, callback) => {
           console.log('error: ', err);
         } else {
           callback(null, { id, text });
-          console.log('id: ', id)
-          console.log('file created successfully');
         }
       });
     }
@@ -30,10 +28,36 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+
+  //compile a list of todo items (array) by visiting each file in the data directory
+  // original: [ '00001.txt', '00002.txt' ]
+  // expected: [{ id: '00001', text: '00001' }, { id: '00002', text: '00002' }]
+
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      console.log('Read Directory Failed: ', err);
+      callback(err);
+    } else {
+      //create new array variable assign to a call to map on the files array
+      var todoList = _.map(files, (file) => {
+        //at each element...
+        //slice the first 5 characters from the string
+        var fileId = file.slice(0, 5);
+        //create an object with id and text properties, value should be 5 char string created above
+        return { id: fileId, text: fileId };
+      });
+      //call callback on null, new array
+      callback(null, todoList);
+    }
   });
-  callback(null, data);
+
+  //assign data variable to a call to map
+  //which returns an array of objects that contain the todo id and text as properties
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  //callback is called on array returned above
+  // callback(null, data);
 };
 
 exports.readOne = (id, callback) => {
