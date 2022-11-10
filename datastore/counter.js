@@ -46,7 +46,13 @@ exports.getNextUniqueId = (callback) => {
     if (err) {
       console.log('read counter err:', err);
     } else {
-      writeCounter(uniqueId + 1, callback);
+      writeCounter(uniqueId + 1, (err, count) => {
+        if (err) {
+          console.log(err);
+        } else {
+          callback(null, count);
+        }
+      });
     }
   });
 };
