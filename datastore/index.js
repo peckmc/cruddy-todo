@@ -27,30 +27,48 @@ exports.create = (text, callback) => {
   });
 };
 
+
 exports.readAll = (callback) => {
 
   //compile a list of todo items (array) by visiting each file in the data directory
   // original: [ '00001.txt', '00002.txt' ]
   // expected: [{ id: '00001', text: '00001' }, { id: '00002', text: '00002' }]
 
-  fs.readdir(exports.dataDir, (err, files) => {
-    if (err) {
-      console.log('Read Directory Failed: ', err);
-      callback(err);
-    } else {
-      //create new array variable assign to a call to map on the files array
-      var todoList = _.map(files, (file) => {
-        //at each element...
-        //slice the first 5 characters from the string
-        var fileId = file.slice(0, 5);
-        //create an object with id and text properties, value should be 5 char string created above
-        return { id: fileId, text: fileId };
-      });
-      //call callback on null, new array
-      callback(null, todoList);
-    }
+  new Promise(function (resolve, reject) {
+    fs.readdir(exports.dataDir, (err, files) => {
+      if (err) {
+        console.log('Read Directory Failed: ', err);
+        reject(err);
+      } else {
+        resolve(files)
+        //iterate through files array
+        var filePromises = [];
+        _.map(files, (currentFileName) => {
+          var myPath = path.join(exports.dataDir, currentFileName);
+          var promise = new Promise(function (resolve, reject) {
+            fs.readFile(myPath, 'utf8', (err, data) => {
+              if (err) {
+                reject(err);
+              } else {
+                var fileId = currentFileName.slice(0, 5);
+                //create an object with id and text properties, value should be 5 char string created above
+                var currentItem = { id: fileId, text: data };
+                resolve(currentItem);
+              }
+            })
+          });
+          filePromises.push(promise);
+        });
+      };
+    Promise.all(filePromises)
+      .then((todoList) => {
+        callback(null, todoList)
+      })
+      .catch((err) => { callback(err) });
+    });
   });
 };
+
 
 exports.readOne = (id, callback) => {
   // refactor the readOne to read a todo item from the dataDir based on the message's id.
@@ -65,7 +83,6 @@ exports.readOne = (id, callback) => {
   // handle the error
   fs.readFile(currentPath, 'utf8', (err, data) => {
     if (err) {
-      console.log('No file with that id!', err);
       callback(err);
       // on success
       // create an object with two properties: first property is the id, second property key is text, value is data
@@ -101,8 +118,8 @@ exports.update = (id, text, callback) => {
 
 
 exports.delete = (id, callback) => {
-//refactor the delete function to remove the todo file stored in the dataDir based on the supplied id
-//create the path
+  //refactor the delete function to remove the todo file stored in the dataDir based on the supplied id
+  //create the path
   var endpoint = id + '.txt';
   var currentPath = path.join(exports.dataDir, endpoint);
   //call fs.unlink, passing in the path and a callback, which takes in an error
